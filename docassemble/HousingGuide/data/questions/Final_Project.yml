@@ -1,0 +1,299 @@
+# Final Project for Community Legal Aid
+# Michael Buccino & Melanie Kaufman
+comment: |
+  Triage tool to guide users with various housing issues to take the necessary steps.
+  Should intake and store their issues, then email a summary and needed information.
+---
+objects:
+ - user: Individual
+---
+mandatory: true
+code: |
+  start_screen
+  main_questions
+  if user_issues['eviction']:
+    eviction_questions
+  if user_issues['subsidized_housing']:
+    subsidized_questions
+  if user_issues['rent_increase']:
+    rent_increase_questions
+  display_results
+  user_email
+  exit_screen
+---
+# DISCLAIMER TEMPLATE
+template: disclaimer
+content: |
+  This app will guide you through the steps needed to resolve your issue, but no attorney-client relationship is formed.  
+  
+  Information given by you in this guide is not protected by client confidentiality or the attorney-client privilege.
+---
+# DISCLAIMER AND SCOPE
+mandatory: true
+field: start_screen
+question: |
+  This is a test app being developed by students.
+subquestion: |
+  ${disclaimer}  
+---
+question: |
+  Which of the following best describes your issue?
+fields:
+  - Select the issue that apply to you: user_issues
+    datatype: checkboxes
+    choices:
+      - ${main_issues['bad_conditions']['label']}: bad_conditions
+      - ${main_issues['behind_on_rent']['label']}: behind_in_rent
+      - ${main_issues['complaints']['label']}: complaints
+      - ${main_issues['eviction']['label']}: eviction
+      - ${main_issues['subsidized_housing']['label']}: subsidized_housing
+      - ${main_issues['rent_increase']['label']}: rent_increase
+       
+continue button field: main_questions
+---
+# Eviction Sub Questions
+question: |
+  ${main_issues['eviction']['label']}
+  Please elaborate.
+fields:
+  - Have you been to court?: eviction_court
+    datatype: yesnoradio
+  - Has your landlord sent you a written notice?: written_notice
+    hide if: eviction_court
+    datatype: yesnoradio
+  - What was the written notice for?: written_notice_type
+    show if: written_notice
+    input type: radio
+    choices:
+      - Summons with a court date: court_summons
+      - Letter of Notice to leave by a certain date: letter_of_notice
+  - What happened with the court case?: case_results
+    show if: eviction_court
+    input type: radio
+    choices:
+      - ${eviction_issues['default_judgement']['label']}: default_judgement
+      - ${eviction_issues['agreement']['label']}: agreement
+      - ${eviction_issues['hearing']['label']}: hearing
+  - Have you received notice with a scheduled eviction?: letter_of_notice
+    show if: case_results['default_judgement']
+    datatype: yesnoradio
+  - Have you been served with a motion saying that you are in violation of your agreement?: violation_agreement
+    show if: case_results['agreement']
+    datatype: yesnoradio
+  - Have you received notice with a scheduled eviction?: letter_of_notice
+    show if: case_results['default_judgement']
+    datatype: yesnoradio
+  
+continue button field: eviction_questions
+---
+# Subsidized Housing Sub Questions
+question: |
+  ${main_issues['subsidized_housing']['label']}
+  Please elaborate.
+fields:
+  - Select the issue that apply to you: user_issues_subsidized
+    datatype: checkboxes
+    choices:
+      - ${subsidized_issues['verification']['label']}: verification
+      - ${subsidized_issues['lost_income']['label']}: lost_income
+      - ${subsidized_issues['new_rent']['label']}: new_rent
+
+continue button field: subsidized_questions
+---
+question: |
+  ${main_issues['rent_increase']['label']}
+  Please elaborate.
+fields:
+  - Select the issue that apply to you: user_issues
+    datatype: checkboxes
+    choices:
+      - 
+
+continue button field: rent_increase_questions
+---
+# DISPLAY RESULTS
+field: display_results
+question: |
+  Summary of Issues
+subquestion: |
+  #### Selections
+  
+  % for issue in user_issues.true_values():
+  
+  ##### ${main_issues[issue]['heading']}
+  
+  ${main_issues[issue]['info']}
+    
+  % if issue == 'subsidized_housing':
+  
+  % for issue in user_issues_subsidized.true_values():
+  
+  > ${subsidized_issues[issue]['heading']}
+  
+  ${subsidized_issues[issue]['info']}
+  
+  % endfor
+  
+  % endif
+ 
+  % endfor
+---
+# Main Dictionary
+variable name: main_issues
+data:
+  bad_conditions:
+    label: I am having problems with bad housing conditions
+    heading: Problems with bad housing conditions
+    info: |
+      Information to user goes here.
+      I can use **Markdown** and Mako tags. ${""}
+    word document: Bad_Condictions.docx   
+  behind_on_rent:
+    label: I am behind on rent.
+    heading: Problems paying rent
+    info: |
+      Info to user.
+    word document: behind_on_rent.docx
+  eviction:
+    label: My landlord is trying to evict me.
+    heading: Dealing with an eviction
+    info: |
+      Info to user.     
+  complaints:
+    label: I have an issue with my neighbor.
+    heading: Issue with neighbor
+    info: |
+      Info to user.      
+    word document: Neighbor_complaints.docx
+  subsidized_housing:
+    label: I live in subsidized/public housing and I think I am being overcharged for rent.
+    heading: Issue with subsidized housing price
+    info: |
+      Info to user.
+  rent_increase:
+    label: My landord is trying to increase rent.
+    heading: Issue with landlord increasing rent
+    info: |
+      Info to user.
+---
+# Sub Dictionaries
+variable name: eviction_issues
+data:
+ default_judgement:
+   label: I missed my court date and a default judgement was entered.
+   heading: Defaulted by missing court date.
+   info: |
+      Information to user goes here.
+ agreement:
+   label: I made an agreement with the Landlord that I am now unable to keep.
+   heading: Made agreement with Landlord, but cannot keep it.
+   info: |
+      Information to user goes here.
+ hearing:
+   label: There was a hearing and I lost.
+   heading: Lost after a hearing.
+   info: |
+      Information to user goes here.
+---
+variable name: subsidized_issues
+data:
+  verification:
+    label: My worker or property manager is asking me for verifications that I cannot get.
+    heading: Problems with request for verification.
+    info: |
+      Information to user goes here.
+  lost_income:
+    label: I have informed my worker or property manager that I have lost income and have heard nothing further.
+    heading: Issue with losing income.
+    info: |
+      Information to user goes here.
+  new_rent:
+    label: My worker or property manager has sent me a notice stating my new rent and I dont think it is correct.
+    heading: Issue with new rent.
+    info: |
+      Information to user goes here.
+---
+variable name: rent_increase_issues
+data:
+  tenancy_no_writing:
+    label: There is no written agreement.
+    heading: Tenancy has no written agreeement.
+    info: |
+      Info.
+  lease:
+    label: A lease.
+    heading: Tenancy is a lease.
+    info: |
+      Info.
+  Section_8:
+    label: Section 8 or MRVP.
+    heading: Tenancy is a section 8 or MRVP.
+    info: |
+      Info.
+  voucher_yes:
+    label: Yes, I have a mobile voucher.
+    heading: Has mobile voucher.
+    info: |
+      Info.
+  voucher_no:
+    label: No, I do not have a mobile voucher.
+    heading: Does not have mobile voucher.
+    info: |
+      Info.
+  mobile_home:
+    label: Mobile home
+    heading: Tenancy is a mobile home.
+    info: |
+       Info.
+  tenant_at_will:
+    label: Tenant at will.
+    heading: Tenancy is at will.
+    info: |
+       Info
+  public_housing:
+    label:  Public housing.
+    heading:  Tenancy is public housing.
+    info: |
+       Info.
+---
+# Collect user info and send results
+mandatory: true
+Field: user_email
+Question: |
+  Please provide your email to receive a copy of this information. Otherwise, continue to your download.
+fields:
+  - E-mail: user.email
+    datatype: email
+    required: false
+---
+template: email_template
+subjects: |
+  Hello,
+content: |
+  % for issue in user_issues.true_values():
+  
+  ### ${ issues[issue]['heading'] }
+  
+  ${issues[issue]['info']}
+  
+  % endfor
+---
+attachment:
+  variable name: my_attachment
+  content: |
+    $(email_template)
+---
+event: exit_screen
+Question: |
+  Thank you.
+subquestion: |
+
+  Below are downloadable document(s) containing information that will explain the issues you are facing and direct you on the steps you can take.
+  
+  % if user.email:
+  
+  You should also receive an email containing a summary of the issues you are facing and the steps you can take.
+  
+  % endif
+  
+  [Download document placeholder]
