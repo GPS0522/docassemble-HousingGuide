@@ -43,12 +43,12 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.HousingGuide',
-      version='0.0.1',
+      version='0.0.8',
       description=('A docassemble extension.'),
-      long_description='# docassemble.HousingGuide\n\nA docassemble extension.\n\n## Author\n\nmbuccino@su.suffolk.edu\n\n',
+      long_description='# docassemble.finalproject\r\n\r\nA docassemble extension.\r\n\r\n## Authors\r\n\r\nQuinten Steenhuis, quinten@lemmalegal.com\r\n\r\nDesigned and written as a student project by Michael Buccino and Melanie Kaufman.\r\n\r\n',
       long_description_content_type='text/markdown',
-      author='',
-      author_email='mbuccino@su.suffolk.edu',
+      author='Quinten Steenhuis',
+      author_email='quinten@lemmalegal.com',
       license='The MIT License (MIT)',
       url='https://docassemble.org',
       packages=find_packages(),
