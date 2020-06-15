@@ -1,0 +1,814 @@
+# A Community Legal Aid App
+# Built by Michael Buccino & Melanie Kaufman
+comment: |
+  Triage tool to provide guide documents based on specific housing issues.
+---
+objects:
+ - user: Individual
+---
+# Title in top left of window
+metadata:
+  title: |
+    Massachusetts Legal Research Finder
+---
+# Color theme of interview
+features:
+  bootstrap theme: https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/cerulean/bootstrap.min.css
+---
+# Interview Logic
+mandatory: true
+comment: |
+  This is the main logic of the interview.  It controls the overall flow of the
+  interview and checks to see if the user selected issues that need further
+  questioning.
+code: |
+  start_screen
+  user_agree
+  if not user_agree:
+    alternate_exit
+  if user_agree:
+    main_questions
+    if not user_issues['bad_conditions']:
+      if not user_issues['behind_on_rent']:
+        if not user_issues['complaints']:
+          if not user_issues['eviction']:
+            if not user_issues['rent_increase']:
+              if not user_issues['subsidized_housing']:
+                alternate_exit             
+              if user_issues['subsidized_housing']:
+                subsidized_questions
+                if not user_issues_subsidized['verification']:
+                  if not user_issues_subsidized['lost_income']:
+                    if not user_issues_subsidized['new_rent']:
+                      alternate_exit                      
+    if user_issues['eviction']:
+      eviction_questions
+    if user_issues['subsidized_housing']:
+      subsidized_questions
+    if user_issues['rent_increase']:
+      rent_increase_questions
+    display_results
+    user_email
+    we_sent_the_email
+    exit_screen
+  alternate_exit
+---
+# Disclaimer
+field: start_screen
+question: |
+  GUIDE ME: Housing
+subquestion: |
+  This is a guided interview intended to help you get specific information for
+  the housing issue you are facing.  
+  
+  It will ask a short series of questions about your issue and then provide
+  downloadable documents based on your responses.
+  
+  You will have the option to provide an email address or phone number to send
+  these documents at the end of the interview, but you do not need to provide
+  one to see your results.
+---
+question: |
+  Disclaimer:
+subquestion: |
+  This app will guide you through the steps needed to resolve your issue, but no
+  attorney-client relationship is formed from this guidance.
+  
+  Any information given by you in this guide is not confidential and is not
+  protected by the attorney-client privilege.
+  
+  This app is currently under development and not all features may be fully
+  functional.
+fields:
+  - By clicking "Yes", I understand the above statements and agree to the terms.: user_agree
+    datatype: yesnoradio
+---
+# Main Issue Questions
+question: |
+  Which of the following best describes your issue?
+fields:
+  - Tell us more about what is going on to find out what you can do about it.: user_issues
+    datatype: checkboxes
+    choices:
+      - ${main_issues['bad_conditions']['label']}: bad_conditions
+      - ${main_issues['behind_on_rent']['label']}: behind_on_rent
+      - ${main_issues['complaints']['label']}: complaints
+      - ${main_issues['eviction']['label']}: eviction
+      - ${main_issues['subsidized_housing']['label']}: subsidized_housing
+      - ${main_issues['rent_increase']['label']}: rent_increase
+       
+continue button field: main_questions
+---
+# Eviction Sub-questions
+question: |
+  ${main_issues['eviction']['label']}
+subquestion: |
+  When and how a landlord can ask for rent increase depends on the type of
+  tenancy you have.
+fields:
+  - label: |
+      Have you been to court? (If you missed your court date or didn't learn about the case
+      until after your default judgment, answer "yes")
+    field: eviction_court
+    datatype: radio
+    choices:
+      - Yes: eviction_court_yes
+      - No: eviction_court_no
+  - ${eviction_issues['written_notice_no']['label']}: written_notice
+    show if: 
+      variable: eviction_court
+      is: 'eviction_court_no'
+    datatype: radio
+    choices:
+      - Yes: written_notice_yes
+      - No: written_notice_no
+  - What was the written notice for?: written_notice_type
+    show if:
+      variable: written_notice
+      is: 'written_notice_yes'
+    datatype: radio
+    choices:
+      - ${eviction_issues['court_summons']['label']}: court_summons
+      - ${eviction_issues['letter_or_notice']['label']}: letter_or_notice
+  - What happened with the court case?: case_results
+    show if: 
+      variable: eviction_court
+      is: 'eviction_court_yes'
+    datatype: radio
+    choices:
+      - ${eviction_issues['default_judgement']['label']}: default_judgement
+      - ${eviction_issues['agreement']['label']}: agreement
+      - ${eviction_issues['hearing']['label']}: hearing
+  - ${eviction_issues['default_served_yes']['label']}: default_served
+    show if: 
+      variable: case_results
+      is: 'default_judgement'
+    datatype: radio
+    choices:
+      - Yes: default_served_yes
+      - No: default_served_no
+  - ${eviction_issues['violation_agreement_yes']['label']}: violation_agreement
+    show if:
+      variable: case_results
+      is: 'agreement'
+    datatype: radio
+    choices:
+      - Yes: violation_agreement_yes
+      - No: violation_agreement_no
+  - ${eviction_issues['hearing_served_yes']['label']}: hearing_served
+    show if: 
+      variable: case_results
+      is: 'hearing'
+    datatype: radio
+    choices:
+      - Yes: hearing_served_yes
+      - No: hearing_served_no
+  
+continue button field: eviction_questions
+---
+# Subsidized Housing Sub-questions
+question: |
+  ${main_issues['subsidized_housing']['label']}
+fields:
+  - Tell us more about what is going on.: user_issues_subsidized
+    datatype: checkboxes
+    choices:
+      - ${subsidized_issues['verification']['label']}: verification
+      - ${subsidized_issues['lost_income']['label']}: lost_income
+      - ${subsidized_issues['new_rent']['label']}: new_rent
+
+continue button field: subsidized_questions
+---
+# Rent Increase Sub-questions
+question: |
+  ${main_issues['rent_increase']['label']}
+  Please elaborate.
+fields:
+  - Choose your current tenancy type.: tenancy_type
+    datatype: radio
+    choices:
+      - ${rent_increase_issues['tenancy_no_writing']['label']}: tenancy_no_writing
+      - ${rent_increase_issues['lease']['label']}: lease
+      - ${rent_increase_issues['section_8']['label']}: section_8
+      - ${rent_increase_issues['mobile_home']['label']}: mobile_home
+      - ${rent_increase_issues['tenant_at_will']['label']}: tenant_at_will
+      - ${rent_increase_issues['public_housing']['label']}: public_housing
+  - Do you have a mobile voucher?: voucher
+    show if:
+      variable: tenancy_type
+      is: section_8
+    datatype: radio
+    choices:
+      - Yes: voucher_yes
+      - No: voucher_no
+
+continue button field: rent_increase_questions
+---
+# Results
+field: display_results
+question: |
+  Guide Me: Results
+subquestion: |
+  **Click on the document(s) below to open the downloadable Guide Me
+  materials.** 
+  
+  **Click "continue" at the bottom of the page to share the document(s) by email
+  or text message.**
+  
+  My Concerns:
+  ${results}
+---
+# Results Logic
+template: results
+comment: |
+  This block controls the content of the output screen.  It checks to see what questions the user answered and provides a summary of their issues with the 'headings' and outputs the info for their situation.
+content: |
+  
+  % for issue in user_issues.true_values():  
+  
+  **${main_issues[issue]['heading']}**
+    
+  % if issue == 'bad_conditions':
+  ${main_issues['bad_conditions']['inline']}
+
+  ${pdf_concatenate(main_issues['bad_conditions']['attachment'])}
+  
+  % endif
+ 
+  
+  % if issue == 'behind_on_rent':
+  ${main_issues['behind_on_rent']['inline']}
+
+  ${pdf_concatenate(main_issues['behind_on_rent']['attachment'])}
+  
+  % endif
+  
+  
+  % if issue == 'complaints':
+  ${main_issues['complaints']['inline']}
+  ${pdf_concatenate(main_issues['complaints']['attachment'])}
+  
+  % endif
+  
+    
+  % if issue == 'eviction':
+  
+  % if eviction_court == 'eviction_court_yes':
+  
+  Have been to court.
+  
+  % if case_results == 'default_judgement':  
+  
+  Defaulted on case.  
+  
+  % if default_served == 'default_served_yes':  
+  
+  ${eviction_issues['default_served_yes']['heading']}  
+  ${eviction_issues['default_served_yes']['inline']}
+  ${pdf_concatenate(eviction_issues['default_served_yes']['attachment'])}  
+  
+  % endif  
+  
+  % if default_served == 'default_served_no':  
+  
+  ${eviction_issues['default_served_no']['heading']}  
+  ${eviction_issues['default_served_no']['inline']}
+  ${pdf_concatenate(eviction_issues['default_served_no']['attachment'])}  
+  
+  % endif  
+  
+  % endif  
+  
+  % if case_results == 'agreement':  
+  
+  Made an agreement with Landlord.  
+  
+  % if violation_agreement == 'violation_agreement_yes': 
+  
+  ${eviction_issues['violation_agreement_yes']['heading']}  
+  ${eviction_issues['violation_agreement_yes']['inline']}
+
+  ${pdf_concatenate(eviction_issues['violation_agreement_yes']['attachment'])} 
+  
+  % endif  
+  
+  % if violation_agreement == 'violation_agreement_no':  
+  
+  ${eviction_issues['violation_agreement_no']['heading']}  
+  ${eviction_issues['violation_agreement_no']['inline']}
+  ${pdf_concatenate(eviction_issues['violation_agreement_no']['attachment'])}  
+  
+  % endif  
+  
+  % endif  
+  
+  % if case_results == 'hearing':  
+  
+  Lost case at a hearing. 
+  
+  % if hearing_served == 'hearing_served_yes':  
+  
+  ${eviction_issues['hearing_served_yes']['heading']}  
+  ${eviction_issues['hearing_served_yes']['inline']}
+  ${pdf_concatenate(eviction_issues['hearing_served_yes']['attachment'])}  
+  
+  % endif  
+  
+  % if hearing_served == 'hearing_served_no':  
+  
+  ${eviction_issues['hearing_served_no']['heading']} 
+  ${eviction_issues['hearing_served_no']['inline']}
+  ${pdf_concatenate(eviction_issues['hearing_served_no']['attachment'])}  
+  
+  % endif  
+  
+  % endif  
+  
+  % endif    
+  
+  % if eviction_court == 'eviction_court_no':  
+  
+  Have not been to court.  
+  
+  % if written_notice == 'written_notice_no':  
+  
+  ${eviction_issues['written_notice_no']['heading']}
+  ${eviction_issues['written_notice_no']['inline']}
+  ${pdf_concatenate(eviction_issues['written_notice_no']['attachment'])}
+  
+  % endif  
+  
+  % if written_notice == 'written_notice_yes':  
+  
+  % if written_notice_type == 'court_summons':  
+  
+  ${eviction_issues['court_summons']['heading']}
+  ${eviction_issues['court_summons']['inline']}
+  ${pdf_concatenate(eviction_issues['court_summons']['attachment'])}
+  
+  % endif  
+  
+  % if written_notice_type == 'letter_or_notice':
+  
+  ${eviction_issues['letter_or_notice']['heading']} 
+  ${eviction_issues['letter_or_notice']['inline']}
+  ${pdf_concatenate(eviction_issues['letter_or_notice']['attachment'])}
+  
+  % endif  
+  
+  % endif  
+  
+  % endif  
+  
+  % endif  
+    
+    
+  % if issue == 'subsidized_housing':
+  
+  % for issue in user_issues_subsidized.true_values():  
+  
+  ${subsidized_issues[issue]['heading']}  
+  ${subsidized_issues[issue]['inline']}
+  ${pdf_concatenate(subsidized_issues[issue]['attachment'])} 
+  
+  % endfor
+  
+  % endif
+  
+  
+  % if issue == 'rent_increase':
+  
+  % if tenancy_type == 'tenancy_no_writing':
+  
+  ${rent_increase_issues['tenancy_no_writing']['heading']}
+  ${rent_increase_issues['tenancy_no_writing']['inline']}
+  ${pdf_concatenate(rent_increase_issues['tenancy_no_writing']['attachment'])}
+  
+  % endif
+  
+  % if tenancy_type == 'lease':
+  
+  ${rent_increase_issues['lease']['heading']}
+  ${rent_increase_issues['lease']['inline']}
+  ${pdf_concatenate(rent_increase_issues['lease']['attachment'])}
+  
+  % endif
+  
+  % if tenancy_type == 'section_8':
+  
+  ${rent_increase_issues['section_8']['heading']}
+  
+  % if voucher == 'voucher_yes':
+  
+  ${rent_increase_issues['voucher_yes']['heading']}
+  ${rent_increase_issues['voucher_yes']['inline']}
+  ${pdf_concatenate(rent_increase_issues['voucher_yes']['attachment'])}
+  
+  % endif
+  
+  % if voucher == 'voucher_no':
+  
+  ${rent_increase_issues['voucher_no']['heading']}
+  ${rent_increase_issues['voucher_no']['inline']}
+  ${pdf_concatenate(rent_increase_issues['voucher_no']['attachment'])}
+  
+  % endif 
+  
+  % endif
+  
+  % if tenancy_type == 'mobile_home':
+  
+  ${rent_increase_issues['mobile_home']['heading']}
+  ${rent_increase_issues['mobile_home']['inline']}
+  ${pdf_concatenate(rent_increase_issues['mobile_home']['attachment'])}
+  
+  % endif
+  
+  % if tenancy_type == 'tenant_at_will':
+  
+  ${rent_increase_issues['tenant_at_will']['heading']}
+  ${rent_increase_issues['tenant_at_will']['inline']}
+  ${pdf_concatenate(rent_increase_issues['tenant_at_will']['attachment'])}
+  
+  % endif
+  
+  % if tenancy_type == 'public_housing':
+  
+  ${rent_increase_issues['public_housing']['heading']}
+  ${rent_increase_issues['public_housing']['inline']}
+  ${pdf_concatenate(rent_increase_issues['public_housing']['attachment'])}
+  
+  % endif
+  
+  % endif
+     
+     
+  % endfor 
+---
+# Main Issues Attachments
+attachment:
+  name: ${main_issues[i]['label']}
+  filename: ${main_issues[i]['word document']}
+  variable name: main_issues[i]['attachment']
+  docx template file:
+    code: |
+      main_issues[i]['word document']
+---
+# Main issues inline templates
+template: main_issues[i]['inline']
+content file: 
+  code: |
+    main_issues[i]['markdown document']
+---
+# Main Issues Dictionary
+variable name: main_issues
+use objects: True
+comment: |
+  The following dictionaries contain the information that is displayed throughout the interview.  'Label' controls the question text; 'heading' controls the results page text; and 'word document' controls the file to give end information to the user.
+data:
+  bad_conditions:
+    label: I am having problems with bad housing conditions
+    heading: Bad Housing Conditions.
+    word document: Bad_Conditions.docx 
+    markdown document: Bad_Conditions.md
+  behind_on_rent:
+    label: I am behind on rent.
+    heading: Behind On Rent.
+    word document: Behind_on_rent.docx
+    markdown document: Behind_on_rent.md
+  eviction:
+    label: My landlord is trying to evict me.
+    heading: Eviction.     
+  complaints:
+    label: I have an issue with my neighbor.
+    heading: Neighbor Complaint      
+    word document: Neighbor_Complaints.docx
+    markdown document: Neighbor_Complaints.md
+  subsidized_housing:
+    label: I live in subsidized or public housing and I don’t think I am paying the right rent.
+    heading: Subsidized Housing Price
+    word document: SubHousing_All_.docx
+    markdown document: Neighbor_Complaints.md
+  rent_increase:
+    label: |
+      My landord is trying to increase rent.
+    heading: Rent Increase
+    word document: 
+---
+# Eviction Attachments
+attachment:
+  name: ${eviction_issues[i]['label']}
+  filename: ${eviction_issues[i]['word document']}
+  variable name: eviction_issues[i]['attachment']
+  docx template file:
+    code: |
+      eviction_issues[i]['word document']
+---
+# Eviction inline templates
+template: eviction_issues[i]['inline']
+content file: 
+  code: |
+    eviction_issues[i]['markdown document']
+
+---
+# Eviction Dictionary
+variable name: eviction_issues
+use objects: True
+data:
+ written_notice_no:
+   label: Has your landlord sent you a written notice?
+   heading: Did not get written notice from landlord.
+   word document: Eviction_-_Nothing_Received_in_Writing.docx
+   markdown document: Eviction_-_Nothing_Received_in_Writing.md
+ court_summons:
+   label: Summons with a court date.
+   heading: Received a court summons.
+   word document: Eviction_-_Received_Summons_with_Court_Date.docx
+   markdown document: Eviction_-_Received_Summons_with_Court_Date.md
+ letter_or_notice:
+   label: Letter or notice telling you to leave by a certain date.
+   heading: Received a notice to leave by a certain date.
+   word document: Eviction_-_Received_Letter_or_Notice.docx
+   markdown document: Eviction_-_Received_Letter_or_Notice.md
+ hearing_served_yes:
+   label: Have you gotten notice with a scheduled eviction?
+   heading: Got a notice with a scheduled eviction.
+   word document: Eviction_-_Had_hearing_and_lost_and_served.docx
+   markdown document: Eviction_-_Had_hearing_and_lost_and_served.md
+ hearing_served_no:
+   label: Have you gotten notice with a scheduled eviction?
+   heading: Did not get a notice with a scheduled eviction.
+   word document: Eviction_-_Had_hearing_and_lost_and_not_served.docx
+   markdown document: Eviction_-_Had_hearing_and_lost_and_not_served.md
+ default_served_yes:
+   label: Have you gotten notice with a scheduled eviction?
+   heading: Got a notice with a scheduled eviction.
+   word document: Eviction_-_Missed_Court_Defaulted_and_Served.docx
+   markdown document: Eviction_-_Missed_Court_Defaulted_and_Served.md
+ default_served_no:
+   label: Have you gotten notice with a scheduled eviction?
+   heading: Did not get a notice with a scheduled eviction.
+   word document: Eviction_-_Missed_Court_and_Defaulted_and_not_served.docx
+   markdown document: Eviction_-_Missed_Court_and_Defaulted_and_not_served.md
+ violation_agreement_yes:
+   label: Have you been given papers saying that you are in violation of your agreement?
+   heading: Got a notice of violating an agreement.
+   word document: Eviction_-_Served_with_Motion_in_Violation_of_Agreement.docx
+   markdown document: Eviction_-_Served_with_Motion_in_Violation_of_Agreement.md
+ violation_agreement_no:
+   label: Have you been given papers saying that you are violating your agreement?
+   heading: Did not get a notice of violating an agreement.
+   word document: Eviction_-_Cannot_keep_agreement.docx
+   markdown document: Eviction_-_Cannot_keep_agreement.md
+ default_judgement:
+   label: I missed my court date and a default judgement was entered.
+   heading: Defaulted by missing court date.
+ agreement:
+   label: I made an agreement with the Landlord that I am now unable to keep.
+   heading: Made agreement with Landlord, but cannot keep it.
+ hearing:
+   label: There was a hearing and I lost.
+   heading: Lost after a hearing.
+---
+# Subsidized Housing Attachments
+attachment:
+  name: ${subsidized_issues[i]['label']}
+  filename: ${subsidized_issues[i]['word document']}
+  variable name: subsidized_issues[i]['attachment']
+  docx template file:
+    code: |
+      subsidized_issues[i]['word document']
+---
+# Subsidized housing inline templates
+template: subsidized_issues[i]['inline']
+content file: 
+  code: |
+    subsidized_issues[i]['markdown document']
+---
+# Subsidized Housing Dictionary
+variable name: subsidized_issues
+use objects: True
+data:
+  verification:
+    label: My worker or property manager is asking me for verifications that I cannot get.
+    heading: Problems with a request for verification.
+    word document: SubHousing_-_Cant_get_Verifications.docx
+    markdown document: SubHousing_-_Cant_get_Verifications.md
+  lost_income:
+    label: I have told my worker or property manager that I have lost income and have heard nothing from them.
+    heading: Issue with losing income.
+    word document: SubHousing_-_Informed_Manager_and_No_response.docx
+    markdown document: SubHousing_-_Informed_Manager_and_No_response.md
+  new_rent:
+    label: My worker or property manager has sent me papers stating my new rent and I dont think it is right.
+    heading: Issue with new rent.
+    word document: SubHousing_-_notice_of_new_rent.docx
+    markdown document: SubHousing_-_notice_of_new_rent.md
+---
+# Rent Increase Attachments
+attachment:
+  name: ${rent_increase_issues[i]['label']}
+  filename: ${rent_increase_issues[i]['word document']}
+  variable name: rent_increase_issues[i]['attachment']
+  docx template file:
+    code: |
+      rent_increase_issues[i]['word document']
+---
+# Rent Increase inline templates
+template: rent_increase_issues[i]['inline']
+content file: 
+  code: |
+    rent_increase_issues[i]['markdown document']
+---
+# Rent Increase Dictionary
+variable name: rent_increase_issues
+use objects: True
+data:
+  tenancy_no_writing:
+    label: I never had a written agreement.
+    heading: Tenancy has no written agreeement.
+    info: |
+    word document: Rent_Increase_-_No_written_agreement.docx
+    markdown document: Rent_Increase_-_No_written_agreement.md
+  lease:
+    label: I have a lease. A lease is a written agreement with a specific end date.
+    heading: Tenancy is a lease.
+    info: |
+    word document: Rent_Increase_-_Lease.docx
+    markdown document: Rent_Increase_-_Lease.md
+  section_8:
+    label: I have a Section 8 or MRVP housing.
+    heading: Tenancy is a Section 8 or MRVP.
+  voucher_yes:
+    label: Yes, I have a mobile voucher.
+    heading: Have a mobile voucher.
+    info: |
+    word document: Rent_Increase_-_Section_8_with_voucher.docx
+    markdown document: Rent_Increase_-_Section_8_with_voucher.md
+  voucher_no:
+    label: No, I do not have a mobile voucher.
+    heading: Do not have a mobile voucher.
+    info: |
+    word document: Rent_Increase_-_Section_8_no_voucher.docx
+    markdown document: Rent_Increase_-_Section_8_no_voucher.md
+  mobile_home:
+    label: I live in a mobile home park.
+    heading: Tenancy is a mobile home.
+    info: |
+    word document: Rent_Increase_-_Mobile_Home.docx
+    markdown document: Rent_Increase_-_Mobile_Home.md
+  tenant_at_will:
+    label: I am a tenant at will.  Sometimes called a month to month tenancy.
+    heading: Tenancy is at will.
+    info: |
+    word document: Rent_Increase_-_Tenant_at_Will.docx
+    markdown document: Rent_Increase_-_Tenant_at_Will.md
+  public_housing:
+    label:  I live in public housing.
+    heading:  Tenancy is public housing.
+    info: |
+    word document: Rent_Increase_-_public_housing.docx
+    markdown document: Rent_Increase_-_public_housing.md
+---
+# Email and Phone Collection
+Field: user_email
+Question: |
+  Please give your email to get this information as an email. You can also click on the download below.
+fields:
+  - E-mail: user.email
+    datatype: email
+    required: false
+  - Enter your phone number for a text summary: user.phone_number
+    required: false
+---
+# Email Template
+template: email_template
+content: |
+  Here are your requested files:
+---
+# Text Template
+template: sms_template
+content: |
+  Here are your requested files:
+---
+# Email/Text Attachment
+attachment:
+  variable name: my_attachment
+  name: Results
+  filename: Guide_Me_Housing
+  valid formats:
+    - pdf
+  content: |
+    ${pdf_download}
+---
+# Attachment Logic: Assembles relevant DOCX into PDF for email attachment.
+code: |
+  relevant_files = []
+
+  for issue in user_issues.true_values():  
+    if issue == 'bad_conditions':
+      relevant_files.append(main_issues['bad_conditions']['attachment'])
+    if issue == 'behind_on_rent':
+      relevant_files.append(main_issues['behind_on_rent']['attachment'])
+    if issue == 'complaints':
+      relevant_files.append(main_issues['complaints']['attachment'])
+    if issue == 'eviction':
+      if eviction_court == 'eviction_court_yes':
+        if case_results == 'default_judgement':    
+          if default_served == 'default_served_yes':  
+            relevant_files.append(eviction_issues['default_served_yes']['attachment']) 
+          if default_served == 'default_served_no':  
+            relevant_files.append(eviction_issues['default_served_no']['attachment'])
+        if case_results == 'agreement':  
+          if violation_agreement == 'violation_agreement_yes': 
+            relevant_files.append(eviction_issues['violation_agreement_yes']['attachment']) 
+          if violation_agreement == 'violation_agreement_no':    
+            relevant_files.append(eviction_issues['violation_agreement_no']['attachment'])
+        if case_results == 'hearing':  
+          if hearing_served == 'hearing_served_yes':   
+            relevant_files.append(eviction_issues['hearing_served_yes']['attachment'])
+          if hearing_served == 'hearing_served_no':   
+            relevant_files.append(eviction_issues['hearing_served_no']['attachment'])  
+      if eviction_court == 'eviction_court_no':  
+        if written_notice == 'written_notice_no':  
+          relevant_files.append(eviction_issues['written_notice_no']['attachment'])
+        if written_notice == 'written_notice_yes':  
+          if written_notice_type == 'court_summons':  
+            relevant_files.append(eviction_issues['court_summons']['attachment'])
+          if written_notice_type == 'letter_or_notice':
+            relevant_files.append(eviction_issues['letter_or_notice']['attachment'])
+    if issue == 'subsidized_housing':
+      for issue in user_issues_subsidized.true_values():  
+        relevant_files.append(subsidized_issues[issue]['attachment']) 
+    if issue == 'rent_increase':
+      if tenancy_type == 'tenancy_no_writing':
+        relevant_files.append(rent_increase_issues['tenancy_no_writing']['attachment'])
+      if tenancy_type == 'lease':
+        relevant_files.append(rent_increase_issues['lease']['attachment'])
+      if tenancy_type == 'section_8':
+        if voucher == 'voucher_yes':
+          relevant_files.append(rent_increase_issues['voucher_yes']['attachment'])
+        if voucher == 'voucher_no':
+          relevant_files.append(rent_increase_issues['voucher_no']['attachment'])
+      if tenancy_type == 'mobile_home':
+        relevant_files.append(rent_increase_issues['mobile_home']['attachment'])
+      if tenancy_type == 'tenant_at_will':
+        relevant_files.append(rent_increase_issues['tenant_at_will']['attachment'])
+      if tenancy_type == 'public_housing':
+        relevant_files.append(rent_increase_issues['public_housing']['attachment'])
+
+  pdf_download = pdf_concatenate(relevant_files)
+---
+# sends email
+code: |
+  if task_not_yet_performed("We sent the email"):
+    sent_email = send_email(to=user, template=email_template, attachments=my_attachment, task="We sent the email")
+    we_sent_the_email = True 
+---
+# sends sms
+code: |
+  send_sms(to=user, template=sms_template, attachments=my_attachment)
+  sent_sms = True
+---
+Question: |
+  Thank you.
+subquestion: |
+
+  The provided document(s) will help guide you through the issues you are facing.
+  
+  % if user.email:
+  
+  You should also get an email with a copy of the Guide Me documents.
+  
+  % endif
+  
+  For more information, you may want to resort to Massachusetts Legal Aid's website.  
+  
+  Click the link below, or copy it into your browser:
+  
+  [Massachusetts Legal Aid](https://www.masslegalservices.org)
+  
+  https://www.masslegalservices.org
+
+event: exit_screen
+---
+question: |
+  For more information...
+subquestion: |
+  If you 
+  % if user_agree:
+  have a different issue from what is shown in this interview, 
+  % endif
+  % if not user_agree:
+  do not agree to the terms of this interview,
+  % endif
+  you may want to check Massachusetts Legal Aid's website.
+  
+  Click the link below, or copy it into your browser:
+   
+  [Massachusetts Legal Aid](https://www.masslegalservices.org)
+  
+  https://www.masslegalservices.org
+  
+  
+event: alternate_exit
