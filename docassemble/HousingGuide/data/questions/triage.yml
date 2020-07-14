@@ -459,19 +459,24 @@ content: |
   % endfor 
 ---
 # Main Issues Attachments
-attachment:
-  name: ${main_issues[i]['label']}
-  filename: ${main_issues[i]['word document']}
-  variable name: main_issues[i]['attachment']
-  docx template file:
-    code: |
-      main_issues[i]['word document']
+# attachment:
+#  name: ${main_issues[i]['label']}
+#  filename: ${main_issues[i]['word document']}
+#  variable name: main_issues[i]['attachment']
+#  docx template file:
+#    code: |
+#      main_issues[i]['word document']
 ---
 # Main issues inline templates
 template: main_issues[i]['inline']
 content file: 
   code: |
     main_issues[i]['markdown document']
+---
+attachment:
+  name: ${main_issues[i]['label']}
+  variable name: main_issues[i]['attachment']
+  content file: main_issues[i]['markdown document']
 ---
 # Main Issues Dictionary
 variable name: main_issues
