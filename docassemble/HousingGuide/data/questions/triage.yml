@@ -209,12 +209,10 @@ field: display_results
 question: |
   Guide Me: Results
 subquestion: |
-  **Click on the document(s) below to open the downloadable Guide Me
-  materials.** 
-  
-  **Click "continue" at the bottom of the page to share the document(s) by email
-  or text message.**
-  
+  Below is information about some steps you can take.  You can save the information 
+  as a pdf by clicking the "save" button below. Click “continue” at the bottom of the 
+  page to to send the document(s) by email or text message
+
   My Concerns:
   ${results}
 ---
@@ -231,7 +229,7 @@ content: |
   % if issue == 'bad_conditions':
   ${main_issues['bad_conditions']['inline']}
 
-  ${pdf_concatenate(main_issues['bad_conditions']['attachment'])}
+  [:file-download: "Save as"](${pdf_concatenate(main_issues['bad_conditions']['attachment']).url_for()})
   
   % endif
  
@@ -239,14 +237,15 @@ content: |
   % if issue == 'behind_on_rent':
   ${main_issues['behind_on_rent']['inline']}
 
-  ${pdf_concatenate(main_issues['behind_on_rent']['attachment'])}
+  [:file-download: "Save as"](${pdf_concatenate(main_issues['behind_on_rent']['attachment']).url_for()})
   
   % endif
   
   
   % if issue == 'complaints':
   ${main_issues['complaints']['inline']}
-  ${pdf_concatenate(main_issues['complaints']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(main_issues['complaints']['attachment']).url_for()})
   
   % endif
   
@@ -265,7 +264,8 @@ content: |
   
   ${eviction_issues['default_served_yes']['heading']}  
   ${eviction_issues['default_served_yes']['inline']}
-  ${pdf_concatenate(eviction_issues['default_served_yes']['attachment'])}  
+  
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['default_served_yes']['attachment']).url_for()}  )
   
   % endif  
   
@@ -273,7 +273,8 @@ content: |
   
   ${eviction_issues['default_served_no']['heading']}  
   ${eviction_issues['default_served_no']['inline']}
-  ${pdf_concatenate(eviction_issues['default_served_no']['attachment'])}  
+  
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['default_served_no']['attachment']).url_for()}  )
   
   % endif  
   
@@ -288,7 +289,7 @@ content: |
   ${eviction_issues['violation_agreement_yes']['heading']}  
   ${eviction_issues['violation_agreement_yes']['inline']}
 
-  ${pdf_concatenate(eviction_issues['violation_agreement_yes']['attachment'])} 
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['violation_agreement_yes']['attachment']).url_for()} )
   
   % endif  
   
@@ -296,7 +297,8 @@ content: |
   
   ${eviction_issues['violation_agreement_no']['heading']}  
   ${eviction_issues['violation_agreement_no']['inline']}
-  ${pdf_concatenate(eviction_issues['violation_agreement_no']['attachment'])}  
+  
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['violation_agreement_no']['attachment']).url_for()}  )
   
   % endif  
   
@@ -310,7 +312,8 @@ content: |
   
   ${eviction_issues['hearing_served_yes']['heading']}  
   ${eviction_issues['hearing_served_yes']['inline']}
-  ${pdf_concatenate(eviction_issues['hearing_served_yes']['attachment'])}  
+  
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['hearing_served_yes']['attachment']).url_for()}  )
   
   % endif  
   
@@ -318,7 +321,7 @@ content: |
   
   ${eviction_issues['hearing_served_no']['heading']} 
   ${eviction_issues['hearing_served_no']['inline']}
-  ${pdf_concatenate(eviction_issues['hearing_served_no']['attachment'])}  
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['hearing_served_no']['attachment']).url_for()}  )
   
   % endif  
   
@@ -334,7 +337,8 @@ content: |
   
   ${eviction_issues['written_notice_no']['heading']}
   ${eviction_issues['written_notice_no']['inline']}
-  ${pdf_concatenate(eviction_issues['written_notice_no']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['written_notice_no']['attachment']).url_for()})
   
   % endif  
   
@@ -344,7 +348,8 @@ content: |
   
   ${eviction_issues['court_summons']['heading']}
   ${eviction_issues['court_summons']['inline']}
-  ${pdf_concatenate(eviction_issues['court_summons']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['court_summons']['attachment']).url_for()})
   
   % endif  
   
@@ -352,7 +357,8 @@ content: |
   
   ${eviction_issues['letter_or_notice']['heading']} 
   ${eviction_issues['letter_or_notice']['inline']}
-  ${pdf_concatenate(eviction_issues['letter_or_notice']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(eviction_issues['letter_or_notice']['attachment']).url_for()})
   
   % endif  
   
@@ -369,7 +375,8 @@ content: |
   
   ${subsidized_issues[issue]['heading']}  
   ${subsidized_issues[issue]['inline']}
-  ${pdf_concatenate(subsidized_issues[issue]['attachment'])} 
+  
+  [:file-download: "Save as"](${pdf_concatenate(subsidized_issues[issue]['attachment']).url_for()} )
   
   % endfor
   
@@ -382,7 +389,8 @@ content: |
   
   ${rent_increase_issues['tenancy_no_writing']['heading']}
   ${rent_increase_issues['tenancy_no_writing']['inline']}
-  ${pdf_concatenate(rent_increase_issues['tenancy_no_writing']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(rent_increase_issues['tenancy_no_writing']['attachment']).url_for()})
   
   % endif
   
@@ -390,7 +398,8 @@ content: |
   
   ${rent_increase_issues['lease']['heading']}
   ${rent_increase_issues['lease']['inline']}
-  ${pdf_concatenate(rent_increase_issues['lease']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(rent_increase_issues['lease']['attachment']).url_for()})
   
   % endif
   
@@ -402,7 +411,8 @@ content: |
   
   ${rent_increase_issues['voucher_yes']['heading']}
   ${rent_increase_issues['voucher_yes']['inline']}
-  ${pdf_concatenate(rent_increase_issues['voucher_yes']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(rent_increase_issues['voucher_yes']['attachment']).url_for()})
   
   % endif
   
@@ -410,7 +420,8 @@ content: |
   
   ${rent_increase_issues['voucher_no']['heading']}
   ${rent_increase_issues['voucher_no']['inline']}
-  ${pdf_concatenate(rent_increase_issues['voucher_no']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(rent_increase_issues['voucher_no']['attachment']).url_for()})
   
   % endif 
   
@@ -420,7 +431,8 @@ content: |
   
   ${rent_increase_issues['mobile_home']['heading']}
   ${rent_increase_issues['mobile_home']['inline']}
-  ${pdf_concatenate(rent_increase_issues['mobile_home']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(rent_increase_issues['mobile_home']['attachment']).url_for()})
   
   % endif
   
@@ -428,7 +440,8 @@ content: |
   
   ${rent_increase_issues['tenant_at_will']['heading']}
   ${rent_increase_issues['tenant_at_will']['inline']}
-  ${pdf_concatenate(rent_increase_issues['tenant_at_will']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(rent_increase_issues['tenant_at_will']['attachment']).url_for()})
   
   % endif
   
@@ -436,12 +449,12 @@ content: |
   
   ${rent_increase_issues['public_housing']['heading']}
   ${rent_increase_issues['public_housing']['inline']}
-  ${pdf_concatenate(rent_increase_issues['public_housing']['attachment'])}
+  
+  [:file-download: "Save as"](${pdf_concatenate(rent_increase_issues['public_housing']['attachment']).url_for()})
   
   % endif
   
   % endif
-     
      
   % endfor 
 ---
