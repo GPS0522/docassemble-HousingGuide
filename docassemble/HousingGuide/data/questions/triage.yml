@@ -103,11 +103,10 @@ continue button field: main_questions
 question: |
   ${main_issues['eviction']['label']}
 subquestion: |
-  When and how a landlord can ask for rent increase depends on the type of
-  tenancy you have.
+  
 fields:
   - label: |
-      Have you been to court? (If you missed your court date or didn't learn about the case
+      Have you been to court yet about your eviction? (If you missed your court date or didn't learn about the case
       until after your default judgment, answer "yes")
     field: eviction_court
     datatype: radio
